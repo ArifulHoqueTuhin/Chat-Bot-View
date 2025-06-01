@@ -1,0 +1,35 @@
+﻿
+
+@model List<ChatBotView.Models.ChatMessage>
+
+@{
+    ViewData["Title"] = "Chat History";
+}
+
+<h2>Chat History</h2>
+
+@if (Model != null && Model.Count > 0)
+{
+    foreach (var msg in Model)
+    {
+        <div class="mb-3">
+            <p><strong>@msg.Sender:</strong> @msg.Message</p>
+
+            @if (msg.Sender == "user")
+            {
+              
+            }
+
+            <hr />
+        </div>
+    }
+}
+else
+{
+    <p>No messages found.</p>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}

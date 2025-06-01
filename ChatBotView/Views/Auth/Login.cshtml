@@ -1,0 +1,25 @@
+﻿
+
+@model ChatBotView.Models.User.LoginViewModel
+
+<h2>Login</h2>
+
+
+<form asp-action="Login" method="post"> 
+    <input asp-for="Email" placeholder="Email" class="form-control" />
+	<br />
+    <input asp-for="Password" type="password" placeholder="Password" class="form-control" /> 
+    <br />
+    <button type="submit" class="btn btn-primary">Login</button> 
+</form>
+
+<br />
+
+<form asp-controller="Auth" asp-action="Register" method="get">
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>
+
+@if (ViewBag.Error != null)
+{
+    <p style="color:red">@ViewBag.Error</p>
+}

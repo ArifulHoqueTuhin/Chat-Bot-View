@@ -1,0 +1,91 @@
+﻿
+
+@model ChatBotView.Models.DTO.ChatMessageResponseDto
+@using Newtonsoft.Json
+
+
+@{
+    ViewData["Title"] = "Chat";
+
+    var isEdit = TempData["EditMessage"] != null;
+    ChatBotView.Models.ChatMessage editMsg = null;
+
+    if (isEdit)
+    {
+        var json = TempData["EditMessage"] as string;
+        if (!string.IsNullOrEmpty(json))
+        {
+            editMsg = Newtonsoft.Json.JsonConvert.DeserializeObject<ChatBotView.Models.ChatMessage>(json);
+        }
+    }
+}
+
+
+
+
+<h2>Chat With Bot</h2>
+
+<form asp-controller="ChatMessage" asp-action="SendMessage" method="post"> 
+     <div class="form-group"> 
+         <label>Message</label> 
+        <input type="text" name="Message" class="form-control" required value="@(editMsg?.Message ?? "")" /> 
+    </div> 
+
+    <input type="hidden" name="SessionId" value="@ViewBag.SessionId" /> 
+    @if (isEdit) 
+    { 
+        <input type="hidden" name="messageId" value="@editMsg.Id" /> 
+     }
+
+    <br />
+
+     <button type="submit" class="btn btn-primary">@(isEdit ? "Update" : "Send")</button> 
+ </form>
+
+
+
+
+<hr />
+<h4>Chat Log</h4>
+<div id="chatLog">
+    @if (Model != null)
+    {
+        <p><strong>User:</strong> @Model.user.Message</p>
+        <a asp-action="History" class="btn btn-info">View History</a>
+        <form asp-action="PrepareEdit" asp-controller="ChatMessage" method="post" style="display:inline">
+            <input type="hidden" name="id" value="@Model.user.Id" />
+            <input type="hidden" name="message" value="@Model.user.Message" />
+            <input type="hidden" name="sessionId" value="@Model.user.SessionId" />
+            <button type="submit" class="btn btn-warning">Edit</button>
+        </form>
+        <form asp-action="Delete" asp-controller="ChatMessage" method="post" asp-route-id="@Model.user.Id" style="display:inline">
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+        <p><strong>Bot:</strong> @Model.bot.Message</p>
+    }
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:7148/chathub")
+            .build();
+
+        connection.on("ReceiveMessage", function (sender, message) {
+            const chatLog = document.getElementById("chatLog");
+            const paragraph = document.createElement("p");
+            paragraph.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            chatLog.appendChild(paragraph);
+        });
+
+        connection.start()
+            .then(() => console.log("✅ Connected to SignalR"))
+            .catch(err => console.error("❌ SignalR connection error:", err));
+    </script>
+}
